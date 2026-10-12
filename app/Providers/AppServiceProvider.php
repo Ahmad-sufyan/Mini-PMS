@@ -2,9 +2,12 @@
 
 namespace App\Providers;
 
+use App\Enums\Permission;
+use App\Models\User;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Validation\Rules\Password;
 
@@ -24,6 +27,7 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         $this->configureDefaults();
+        $this->configureAuthorization();
     }
 
     /**
@@ -46,5 +50,16 @@ class AppServiceProvider extends ServiceProvider
                 ->uncompromised()
             : null,
         );
+    }
+
+    /**
+     * Register a gate for every permission so routes, controllers and policies
+     * can authorize with `can:patients.view` or `Gate::allows(Permission::ViewPatients)`.
+     */
+    protected function configureAuthorization(): void
+    {
+        foreach (Permission::cases() as $permission) {
+            Gate::define($permission, fn (User $user): bool => $user->hasPermission($permission));
+        }
     }
 }

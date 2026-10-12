@@ -12,14 +12,34 @@ class DatabaseSeeder extends Seeder
 
     /**
      * Seed the application's database.
+     *
+     * Every demo account uses the password "password".
      */
     public function run(): void
     {
-        // User::factory(10)->create();
+        User::factory()->admin()->create([
+            'name' => 'Clinic Admin',
+            'email' => 'admin@demo.test',
+        ]);
 
-        User::factory()->create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
+        User::factory()->receptionist()->create([
+            'name' => 'Rita Reception',
+            'email' => 'reception@demo.test',
+        ]);
+
+        User::factory()->doctor('General Practice')->create([
+            'name' => 'Dr. Amina Khan',
+            'email' => 'doctor@demo.test',
+        ]);
+
+        User::factory()->doctor('Pediatrics')->create([
+            'name' => 'Dr. Daniel Reyes',
+            'email' => 'doctor2@demo.test',
+        ]);
+
+        User::factory()->doctor('Dermatology')->create([
+            'name' => 'Dr. Mei Chen',
+            'email' => 'doctor3@demo.test',
         ]);
     }
 }

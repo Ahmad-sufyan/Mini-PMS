@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Enums\Permission;
+use App\Enums\Role;
 use Database\Factories\UserFactory;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
@@ -18,6 +20,10 @@ use Laravel\Fortify\TwoFactorAuthenticatable;
  * @property int $id
  * @property string $name
  * @property string $email
+ * @property Role $role
+ * @property string|null $specialization
+ * @property string|null $phone
+ * @property bool $is_active
  * @property Carbon|null $email_verified_at
  * @property string $password
  * @property string|null $two_factor_secret
@@ -27,7 +33,7 @@ use Laravel\Fortify\TwoFactorAuthenticatable;
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
-#[Fillable(['name', 'email', 'password'])]
+#[Fillable(['name', 'email', 'password', 'role', 'specialization', 'phone', 'is_active'])]
 #[Hidden(['password', 'two_factor_secret', 'two_factor_recovery_codes', 'remember_token'])]
 class User extends Authenticatable implements MustVerifyEmail, PasskeyUser
 {
@@ -44,7 +50,51 @@ class User extends Authenticatable implements MustVerifyEmail, PasskeyUser
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'role' => Role::class,
+            'is_active' => 'boolean',
             'two_factor_confirmed_at' => 'datetime',
         ];
+    }
+
+    /**
+     * Determine if the user has any of the given roles.
+     */
+    public function hasRole(Role ...$roles): bool
+    {
+        return in_array($this->role, $roles, true);
+    }
+
+    /**
+     * Determine if the user is a clinic administrator.
+     */
+    public function isAdmin(): bool
+    {
+        return $this->hasRole(Role::Admin);
+    }
+
+    /**
+     * Determine if the user is a doctor.
+     */
+    public function isDoctor(): bool
+    {
+        return $this->hasRole(Role::Doctor);
+    }
+
+    /**
+     * Determine if the user has been granted the given permission.
+     */
+    public function hasPermission(Permission $permission): bool
+    {
+        return $this->is_active && $this->role->hasPermission($permission);
+    }
+
+    /**
+     * Get the permissions granted to the user.
+     *
+     * @return list<Permission>
+     */
+    public function permissions(): array
+    {
+        return $this->is_active ? $this->role->permissions() : [];
     }
 }

@@ -1,39 +1,29 @@
 <?php
 
-namespace Tests\Feature\Auth;
-
-use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Route;
 use Laravel\Fortify\Features;
-use Tests\TestCase;
 
-class RegistrationTest extends TestCase
-{
-    use RefreshDatabase;
+test('the registration feature is disabled', function () {
+    expect(Features::enabled(Features::registration()))->toBeFalse();
+});
 
-    protected function setUp(): void
-    {
-        parent::setUp();
+test('the registration routes are not registered', function () {
+    expect(Route::has('register'))->toBeFalse()
+        ->and(Route::has('register.store'))->toBeFalse();
+});
 
-        $this->skipUnlessFortifyHas(Features::registration());
-    }
+test('the registration screen cannot be opened', function () {
+    $this->get('/register')->assertNotFound();
+});
 
-    public function test_registration_screen_can_be_rendered()
-    {
-        $response = $this->get(route('register'));
+test('new users cannot register themselves', function () {
+    $this->post('/register', [
+        'name' => 'Test User',
+        'email' => 'test@example.com',
+        'password' => 'password',
+        'password_confirmation' => 'password',
+    ])->assertNotFound();
 
-        $response->assertOk();
-    }
-
-    public function test_new_users_can_register()
-    {
-        $response = $this->post(route('register.store'), [
-            'name' => 'Test User',
-            'email' => 'test@example.com',
-            'password' => 'password',
-            'password_confirmation' => 'password',
-        ]);
-
-        $this->assertAuthenticated();
-        $response->assertRedirect(route('dashboard', absolute: false));
-    }
-}
+    $this->assertGuest();
+    $this->assertDatabaseMissing('users', ['email' => 'test@example.com']);
+});

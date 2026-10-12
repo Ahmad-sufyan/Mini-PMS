@@ -1,7 +1,27 @@
+export type Role = 'admin' | 'doctor' | 'receptionist';
+
+export type RoleOption = {
+    value: Role;
+    label: string;
+};
+
+export type Permission =
+    | 'patients.view'
+    | 'patients.manage'
+    | 'appointments.view'
+    | 'appointments.manage'
+    | 'billing.view'
+    | 'billing.manage'
+    | 'staff.manage';
+
 export type User = {
     id: number;
     name: string;
     email: string;
+    role: Role;
+    specialization: string | null;
+    phone: string | null;
+    is_active: boolean;
     avatar?: string;
     email_verified_at: string | null;
     two_factor_enabled?: boolean;
@@ -12,6 +32,8 @@ export type User = {
 
 export type Auth = {
     user: User;
+    role: RoleOption;
+    permissions: Permission[];
 };
 
 export type Passkey = {
