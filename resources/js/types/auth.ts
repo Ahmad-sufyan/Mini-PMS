@@ -8,6 +8,7 @@ export type RoleOption = {
 export type Permission =
     | 'patients.view'
     | 'patients.manage'
+    | 'patients.delete'
     | 'appointments.view'
     | 'appointments.manage'
     | 'billing.view'

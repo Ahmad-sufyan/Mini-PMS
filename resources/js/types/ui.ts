@@ -13,6 +13,11 @@ export type FlashToast = {
     message: string;
 };
 
+export type SelectOption<TValue extends string = string> = {
+    value: TValue;
+    label: string;
+};
+
 export type AuthLayoutProps = {
     children?: ReactNode;
     name?: string;

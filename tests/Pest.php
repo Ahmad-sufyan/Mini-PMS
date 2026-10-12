@@ -44,7 +44,27 @@ expect()->extend('toBeOne', function () {
 |
 */
 
-function something()
+/**
+ * Valid form data for registering or updating a (fake) patient.
+ *
+ * @param  array<string, mixed>  $overrides
+ * @return array<string, mixed>
+ */
+function patientPayload(array $overrides = []): array
 {
-    // ..
+    return [
+        'first_name' => 'Jane',
+        'last_name' => 'Doe',
+        'date_of_birth' => '1990-04-12',
+        'gender' => 'female',
+        'phone' => '+1 555 010 0200',
+        'email' => 'jane.doe@example.com',
+        'address' => '1 Test Street, Springfield',
+        'blood_group' => 'O+',
+        'allergies' => 'Penicillin',
+        'notes' => 'Prefers morning appointments.',
+        'emergency_contact_name' => 'John Doe',
+        'emergency_contact_phone' => '+1 555 010 0201',
+        ...$overrides,
+    ];
 }

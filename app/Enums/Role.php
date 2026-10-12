@@ -2,8 +2,12 @@
 
 namespace App\Enums;
 
+use App\Enums\Concerns\HasOptions;
+
 enum Role: string
 {
+    use HasOptions;
+
     case Admin = 'admin';
     case Doctor = 'doctor';
     case Receptionist = 'receptionist';
@@ -50,18 +54,5 @@ enum Role: string
     public function hasPermission(Permission $permission): bool
     {
         return in_array($permission, $this->permissions(), true);
-    }
-
-    /**
-     * Get the roles as value / label pairs for select inputs.
-     *
-     * @return list<array{value: string, label: string}>
-     */
-    public static function options(): array
-    {
-        return array_map(
-            fn (self $role): array => ['value' => $role->value, 'label' => $role->label()],
-            self::cases(),
-        );
     }
 }
