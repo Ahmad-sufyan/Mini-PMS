@@ -1,6 +1,5 @@
 import { Form, Head, Link, setLayoutProps } from '@inertiajs/react';
 import {
-    CalendarDays,
     Pencil,
     Receipt,
     RotateCcw,
@@ -12,6 +11,7 @@ import type { ReactNode } from 'react';
 import PatientController from '@/actions/App/Http/Controllers/PatientController';
 import DeletePatientDialog from '@/components/delete-patient-dialog';
 import EmptyState from '@/components/empty-state';
+import PatientAppointments from '@/components/patient-appointments';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
@@ -22,7 +22,7 @@ import { useInitials } from '@/hooks/use-initials';
 import { usePermissions } from '@/hooks/use-permissions';
 import { formatAge, formatDate, formatTimestamp } from '@/lib/dates';
 import { edit, index, show } from '@/routes/patients';
-import type { Patient } from '@/types';
+import type { Appointment, Patient } from '@/types';
 
 const capitalize = (value: string): string =>
     value.charAt(0).toUpperCase() + value.slice(1);
@@ -57,7 +57,15 @@ function DetailsCard({
     );
 }
 
-export default function ShowPatient({ patient }: { patient: Patient }) {
+export default function ShowPatient({
+    patient,
+    appointments,
+    today,
+}: {
+    patient: Patient;
+    appointments: Appointment[];
+    today: string;
+}) {
     const { can } = usePermissions();
     const getInitials = useInitials();
     const isDeleted = patient.deleted_at !== null;
@@ -272,10 +280,10 @@ export default function ShowPatient({ patient }: { patient: Patient }) {
                     </TabsContent>
 
                     <TabsContent value="appointments">
-                        <EmptyState
-                            icon={CalendarDays}
-                            title="No appointments yet"
-                            description="Appointments booked for this patient will appear here."
+                        <PatientAppointments
+                            patient={patient}
+                            appointments={appointments}
+                            today={today}
                         />
                     </TabsContent>
 

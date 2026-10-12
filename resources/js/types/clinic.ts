@@ -10,3 +10,13 @@ export type Clinic = {
     working_days: string[];
     currency: string;
 };
+
+/**
+ * The clinic's opening hours, as given by ClinicSchedule::toArray().
+ */
+export type ClinicSchedule = {
+    timezone: string;
+    opens_at: string;
+    closes_at: string;
+    working_days: string[];
+};

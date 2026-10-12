@@ -7,10 +7,17 @@ use App\Enums\Gender;
 use App\Enums\Permission;
 use App\Http\Requests\Patients\StorePatientRequest;
 use App\Http\Requests\Patients\UpdatePatientRequest;
+use App\Http\Resources\AppointmentResource;
+use App\Http\Resources\PatientSummaryResource;
+use App\Models\Appointment;
 use App\Models\Patient;
+use App\Models\User;
+use App\Support\ClinicSchedule;
+use Illuminate\Container\Attributes\CurrentUser;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Support\Facades\Gate;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -84,12 +91,37 @@ class PatientController extends Controller
     }
 
     /**
+     * Find patients by name, MRN or phone for the patient picker.
+     */
+    public function search(Request $request): AnonymousResourceCollection
+    {
+        $patients = Patient::query()
+            ->search($request->string('query')->trim()->value())
+            ->orderBy('last_name')
+            ->orderBy('first_name')
+            ->limit(10)
+            ->get();
+
+        return PatientSummaryResource::collection($patients);
+    }
+
+    /**
      * Show the patient's record.
      */
-    public function show(Patient $patient): Response
+    public function show(Request $request, #[CurrentUser] User $user, ClinicSchedule $clinic, Patient $patient): Response
     {
+        $appointments = $patient->appointments()
+            ->visibleTo($user)
+            ->with('doctor:id,name,specialization')
+            ->orderByDesc('starts_at')
+            ->get()
+            ->each(fn (Appointment $appointment) => $appointment->setRelation('patient', $patient))
+            ->map(fn (Appointment $appointment) => AppointmentResource::make($appointment)->resolve($request));
+
         return Inertia::render('patients/show', [
             'patient' => $patient,
+            'appointments' => $appointments,
+            'today' => $clinic->today()->toDateString(),
         ]);
     }
 

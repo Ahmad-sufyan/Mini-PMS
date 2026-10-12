@@ -1,3 +1,4 @@
+export type * from './appointment';
 export type * from './auth';
 export type * from './clinic';
 export type * from './navigation';
