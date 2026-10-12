@@ -3,6 +3,7 @@
 namespace App\Concerns;
 
 use App\Enums\Role;
+use App\Rules\PhoneNumber;
 use Illuminate\Validation\Rule;
 
 trait StaffValidationRules
@@ -23,7 +24,7 @@ trait StaffValidationRules
             ...$this->profileRules($userId),
             'role' => ['required', Rule::enum(Role::class)],
             'specialization' => ['exclude_unless:role,'.Role::Doctor->value, 'required', 'string', 'max:255'],
-            'phone' => ['nullable', 'string', 'max:30', 'regex:/^[0-9+()\-.\s]+$/'],
+            'phone' => ['nullable', 'string', 'max:30', new PhoneNumber],
         ];
     }
 }

@@ -2,18 +2,18 @@
 
 namespace Database\Seeders;
 
+use App\Models\Patient;
 use App\Models\User;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
 class DatabaseSeeder extends Seeder
 {
-    use WithoutModelEvents;
-
     /**
      * Seed the application's database.
      *
-     * Every demo account uses the password "password".
+     * Model events stay enabled: patients get their MRN from a "created"
+     * event. Every demo account uses the password "password", and all of
+     * the data is fake.
      */
     public function run(): void
     {
@@ -41,5 +41,7 @@ class DatabaseSeeder extends Seeder
             'name' => 'Dr. Mei Chen',
             'email' => 'doctor3@demo.test',
         ]);
+
+        Patient::factory()->count(60)->create();
     }
 }
