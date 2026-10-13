@@ -236,17 +236,21 @@ export default function InvoicesIndex({
                                         Invoice
                                     </TableHead>
                                     <TableHead>Patient</TableHead>
-                                    <TableHead>Issued</TableHead>
-                                    <TableHead className="text-right">
+                                    <TableHead className="hidden sm:table-cell">
+                                        Issued
+                                    </TableHead>
+                                    <TableHead className="hidden text-right md:table-cell">
                                         Total
                                     </TableHead>
-                                    <TableHead className="text-right">
+                                    <TableHead className="hidden text-right lg:table-cell">
                                         Paid
                                     </TableHead>
                                     <TableHead className="text-right">
                                         Balance
                                     </TableHead>
-                                    <TableHead>Status</TableHead>
+                                    <TableHead className="hidden pr-4 sm:table-cell">
+                                        Status
+                                    </TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
@@ -259,8 +263,14 @@ export default function InvoicesIndex({
                                             >
                                                 {invoice.invoice_number}
                                             </Link>
+                                            <div className="mt-1 sm:hidden">
+                                                <InvoiceStatusBadge
+                                                    status={invoice.status}
+                                                    label={invoice.status_label}
+                                                />
+                                            </div>
                                         </TableCell>
-                                        <TableCell>
+                                        <TableCell className="whitespace-normal">
                                             <div className="font-medium">
                                                 {invoice.patient.full_name}
                                             </div>
@@ -268,13 +278,13 @@ export default function InvoicesIndex({
                                                 {invoice.patient.mrn}
                                             </div>
                                         </TableCell>
-                                        <TableCell>
+                                        <TableCell className="hidden sm:table-cell">
                                             {formatDate(invoice.issued_on)}
                                         </TableCell>
-                                        <TableCell className="text-right tabular-nums">
+                                        <TableCell className="hidden text-right tabular-nums md:table-cell">
                                             {format(invoice.total)}
                                         </TableCell>
-                                        <TableCell className="text-right tabular-nums">
+                                        <TableCell className="hidden text-right tabular-nums lg:table-cell">
                                             {format(invoice.paid)}
                                         </TableCell>
                                         <TableCell className="text-right font-medium tabular-nums">
@@ -282,7 +292,7 @@ export default function InvoicesIndex({
                                                 ? '—'
                                                 : format(invoice.balance)}
                                         </TableCell>
-                                        <TableCell>
+                                        <TableCell className="hidden pr-4 sm:table-cell">
                                             <InvoiceStatusBadge
                                                 status={invoice.status}
                                                 label={invoice.status_label}

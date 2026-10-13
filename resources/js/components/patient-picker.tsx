@@ -1,11 +1,11 @@
 import { Search } from 'lucide-react';
-import { useEffect, useId, useState } from 'react';
+import { useId, useState } from 'react';
 import type { KeyboardEvent } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { usePatientSearch } from '@/hooks/use-patient-search';
 import { formatAge } from '@/lib/dates';
 import { cn } from '@/lib/utils';
-import { search } from '@/routes/patients';
 import type { PatientSummary } from '@/types';
 
 type Props = {
@@ -27,44 +27,9 @@ export default function PatientPicker({ id, defaultPatient, invalid }: Props) {
     const [selected, setSelected] = useState(defaultPatient);
     const [query, setQuery] = useState('');
     const [open, setOpen] = useState(false);
-    const [results, setResults] = useState<PatientSummary[]>([]);
     const [activeIndex, setActiveIndex] = useState(0);
-    const [loading, setLoading] = useState(false);
     const [changing, setChanging] = useState(false);
-
-    // Search once the user pauses typing; a newer search cancels the last.
-    useEffect(() => {
-        if (!open) {
-            return;
-        }
-
-        const controller = new AbortController();
-        const timeout = setTimeout(async () => {
-            setLoading(true);
-
-            try {
-                const response = await fetch(search.url({ query: { query } }), {
-                    headers: { Accept: 'application/json' },
-                    signal: controller.signal,
-                });
-                const body = (await response.json()) as {
-                    data: PatientSummary[];
-                };
-
-                setResults(body.data);
-                setActiveIndex(0);
-            } catch {
-                // Aborted by a newer search, or the request failed.
-            } finally {
-                setLoading(false);
-            }
-        }, 200);
-
-        return () => {
-            clearTimeout(timeout);
-            controller.abort();
-        };
-    }, [query, open]);
+    const { results, loading } = usePatientSearch(query, open);
 
     const choose = (patient: PatientSummary) => {
         setSelected(patient);
@@ -179,6 +144,7 @@ export default function PatientPicker({ id, defaultPatient, invalid }: Props) {
                         className="pl-9"
                         onChange={(event) => {
                             setQuery(event.target.value);
+                            setActiveIndex(0);
                             setOpen(true);
                         }}
                         onFocus={() => setOpen(true)}

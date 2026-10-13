@@ -10,6 +10,7 @@ import {
     DialogTitle,
     DialogTrigger,
 } from '@/components/ui/dialog';
+import { Spinner } from '@/components/ui/spinner';
 import type { StaffMember } from '@/types';
 
 export default function DeactivateStaffDialog({
@@ -57,6 +58,7 @@ export default function DeactivateStaffDialog({
                                     type="submit"
                                     data-test="confirm-deactivate-staff-button"
                                 >
+                                    {processing && <Spinner />}
                                     Deactivate
                                 </button>
                             </Button>

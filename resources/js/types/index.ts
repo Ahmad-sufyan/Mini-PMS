@@ -2,6 +2,7 @@ export type * from './appointment';
 export type * from './auth';
 export type * from './billing';
 export type * from './clinic';
+export type * from './dashboard';
 export type * from './navigation';
 export type * from './pagination';
 export type * from './patient';

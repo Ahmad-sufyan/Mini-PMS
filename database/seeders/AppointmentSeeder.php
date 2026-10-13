@@ -70,17 +70,22 @@ class AppointmentSeeder extends Seeder
     ];
 
     /**
-     * Book every active doctor's working days from 60 days ago to 14 days
-     * ahead, with statuses that make sense for the date: past appointments
-     * are mostly completed, current ones checked in, future ones scheduled.
+     * Book every active doctor's working days from the start of the month
+     * five months ago to 14 days ahead, with statuses that make sense for
+     * the date: past appointments are mostly completed, current ones
+     * checked in, future ones scheduled.
      */
     public function run(ClinicSchedule $clinic): void
     {
         $doctors = User::query()->where('role', Role::Doctor)->where('is_active', true)->get();
-        $patientIds = Patient::query()->pluck('id');
         $bookerIds = User::query()->whereIn('role', [Role::Admin, Role::Receptionist])->pluck('id');
 
-        if ($doctors->isEmpty() || $patientIds->isEmpty()) {
+        // When each patient registered, so nobody is booked before then.
+        $registeredAt = Patient::query()->get(['id', 'created_at'])
+            ->mapWithKeys(fn (Patient $patient) => [$patient->id => $patient->created_at->getTimestamp()])
+            ->all();
+
+        if ($doctors->isEmpty() || $registeredAt === []) {
             return;
         }
 
@@ -88,21 +93,22 @@ class AppointmentSeeder extends Seeder
         $childIds = Patient::query()
             ->where('date_of_birth', '>', $clinic->today()->subYears(16)->toDateString())
             ->pluck('id');
+        $children = array_intersect_key($registeredAt, $childIds->flip()->all());
 
         $now = $clinic->now();
         $lastDay = $clinic->today()->addDays(14);
 
         // One transaction keeps SQLite from syncing to disk after every insert.
-        DB::transaction(function () use ($clinic, $now, $lastDay, $doctors, $patientIds, $childIds, $bookerIds): void {
-            for ($day = $clinic->today()->subDays(60); $day->lte($lastDay); $day = $day->addDay()) {
+        DB::transaction(function () use ($clinic, $now, $lastDay, $doctors, $registeredAt, $children, $bookerIds): void {
+            for ($day = $clinic->today()->subMonths(5)->startOfMonth(); $day->lte($lastDay); $day = $day->addDay()) {
                 if (! $clinic->isWorkingDay($day)) {
                     continue;
                 }
 
                 foreach ($doctors as $doctor) {
-                    $patients = $doctor->specialization === 'Pediatrics' && $childIds->isNotEmpty()
-                        ? $childIds
-                        : $patientIds;
+                    $patients = $doctor->specialization === 'Pediatrics' && $children !== []
+                        ? $children
+                        : $registeredAt;
 
                     $this->bookDay($clinic, $day, $doctor, $patients, $bookerIds, $now);
                 }
@@ -113,14 +119,14 @@ class AppointmentSeeder extends Seeder
     /**
      * Fill one doctor's day with back-to-back appointments and a few gaps.
      *
-     * @param  Collection<int, int>  $patientIds
+     * @param  array<int, int>  $patients  registration timestamps, by patient ID
      * @param  Collection<int, int>  $bookerIds
      */
     private function bookDay(
         ClinicSchedule $clinic,
         CarbonImmutable $day,
         User $doctor,
-        Collection $patientIds,
+        array $patients,
         Collection $bookerIds,
         CarbonImmutable $now,
     ): void {
@@ -137,11 +143,19 @@ class AppointmentSeeder extends Seeder
                 return;
             }
 
-            // Booked one to fourteen days ahead, but never in the future.
+            // Booked one to fourteen days ahead, but never in the future,
+            // for someone who had registered by then.
             $bookedAt = $start->subDays(fake()->numberBetween(1, 14))->min($now);
+            $registered = array_keys(array_filter($patients, fn (int $registeredAt): bool => $registeredAt <= $bookedAt->getTimestamp()));
+
+            if ($registered === []) {
+                $start = $end;
+
+                continue;
+            }
 
             Appointment::factory()->create([
-                'patient_id' => $patientIds->random(),
+                'patient_id' => fake()->randomElement($registered),
                 'doctor_id' => $doctor->id,
                 'starts_at' => $start->utc(),
                 'duration_minutes' => $minutes,

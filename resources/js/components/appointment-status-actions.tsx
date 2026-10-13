@@ -13,6 +13,7 @@ import {
     DialogTitle,
     DialogTrigger,
 } from '@/components/ui/dialog';
+import { Spinner } from '@/components/ui/spinner';
 import { formatDay } from '@/lib/dates';
 import { create as createVisit } from '@/routes/visits';
 import type { Appointment, AppointmentStatus } from '@/types';
@@ -101,6 +102,7 @@ function ConfirmStatusDialog({
                                 disabled={processing}
                                 data-test={`confirm-appointment-${status.value}-button`}
                             >
+                                {processing && <Spinner />}
                                 {confirmation.action}
                             </Button>
                         </DialogFooter>
@@ -170,6 +172,7 @@ export default function AppointmentStatusActions({
                                 disabled={processing}
                                 data-test={`appointment-${status.value}-button`}
                             >
+                                {processing && <Spinner />}
                                 {status.label}
                             </Button>
                         )}

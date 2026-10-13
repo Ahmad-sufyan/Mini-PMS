@@ -11,6 +11,7 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Spinner } from '@/components/ui/spinner';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useInitials } from '@/hooks/use-initials';
 import { usePermissions } from '@/hooks/use-permissions';
@@ -138,7 +139,11 @@ export default function ShowPatient({
                                             disabled={processing}
                                             data-test="restore-patient-button"
                                         >
-                                            <RotateCcw />
+                                            {processing ? (
+                                                <Spinner />
+                                            ) : (
+                                                <RotateCcw />
+                                            )}
                                             Restore record
                                         </Button>
                                     )}

@@ -5,6 +5,7 @@ import DeactivateStaffDialog from '@/components/deactivate-staff-dialog';
 import Heading from '@/components/heading';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Spinner } from '@/components/ui/spinner';
 import {
     Table,
     TableBody,
@@ -52,9 +53,15 @@ export default function StaffIndex({ staff, roles }: Props) {
                         <TableHeader>
                             <TableRow>
                                 <TableHead className="pl-4">Name</TableHead>
-                                <TableHead>Role</TableHead>
-                                <TableHead>Specialization</TableHead>
-                                <TableHead>Phone</TableHead>
+                                <TableHead className="hidden sm:table-cell">
+                                    Role
+                                </TableHead>
+                                <TableHead className="hidden md:table-cell">
+                                    Specialization
+                                </TableHead>
+                                <TableHead className="hidden lg:table-cell">
+                                    Phone
+                                </TableHead>
                                 <TableHead>Status</TableHead>
                                 <TableHead className="pr-4">
                                     <span className="sr-only">Actions</span>
@@ -73,7 +80,7 @@ export default function StaffIndex({ staff, roles }: Props) {
                                                 'text-muted-foreground',
                                         )}
                                     >
-                                        <TableCell className="pl-4">
+                                        <TableCell className="pl-4 whitespace-normal">
                                             <div className="font-medium">
                                                 {member.name}
                                                 {isSelf && (
@@ -83,19 +90,22 @@ export default function StaffIndex({ staff, roles }: Props) {
                                                     </span>
                                                 )}
                                             </div>
-                                            <div className="text-muted-foreground">
+                                            <div className="wrap-anywhere text-muted-foreground">
                                                 {member.email}
                                             </div>
+                                            <div className="text-xs text-muted-foreground sm:hidden">
+                                                {roleLabel(member.role)}
+                                            </div>
                                         </TableCell>
-                                        <TableCell>
+                                        <TableCell className="hidden sm:table-cell">
                                             <Badge variant="outline">
                                                 {roleLabel(member.role)}
                                             </Badge>
                                         </TableCell>
-                                        <TableCell>
+                                        <TableCell className="hidden md:table-cell">
                                             {member.specialization ?? '—'}
                                         </TableCell>
-                                        <TableCell>
+                                        <TableCell className="hidden lg:table-cell">
                                             {member.phone ?? '—'}
                                         </TableCell>
                                         <TableCell>
@@ -109,8 +119,8 @@ export default function StaffIndex({ staff, roles }: Props) {
                                                 </Badge>
                                             )}
                                         </TableCell>
-                                        <TableCell className="pr-4">
-                                            <div className="flex justify-end gap-2">
+                                        <TableCell className="pr-4 whitespace-normal">
+                                            <div className="flex flex-wrap justify-end gap-2">
                                                 <Button
                                                     variant="ghost"
                                                     size="sm"
@@ -148,6 +158,9 @@ export default function StaffIndex({ staff, roles }: Props) {
                                                                     processing
                                                                 }
                                                             >
+                                                                {processing && (
+                                                                    <Spinner />
+                                                                )}
                                                                 Activate
                                                             </Button>
                                                         )}

@@ -9,6 +9,7 @@ import TablePagination from '@/components/table-pagination';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Spinner } from '@/components/ui/spinner';
 import {
     Select,
     SelectContent,
@@ -264,15 +265,29 @@ export default function PatientsIndex({ patients, filters, genders }: Props) {
                         <Table>
                             <TableHeader>
                                 <TableRow>
-                                    {sortLink('mrn', 'MRN', 'pl-4')}
-                                    {sortLink('name', 'Name')}
+                                    {sortLink(
+                                        'mrn',
+                                        'MRN',
+                                        'hidden pl-4 sm:table-cell',
+                                    )}
+                                    {sortLink('name', 'Name', 'pl-4 sm:pl-2')}
                                     {sortLink('age', 'Age')}
-                                    <TableHead>Gender</TableHead>
-                                    <TableHead>Phone</TableHead>
+                                    <TableHead className="hidden md:table-cell">
+                                        Gender
+                                    </TableHead>
+                                    <TableHead className="hidden sm:table-cell">
+                                        Phone
+                                    </TableHead>
                                     {showingDeleted ? (
-                                        <TableHead>Deleted</TableHead>
+                                        <TableHead className="hidden lg:table-cell">
+                                            Deleted
+                                        </TableHead>
                                     ) : (
-                                        sortLink('registered', 'Registered')
+                                        sortLink(
+                                            'registered',
+                                            'Registered',
+                                            'hidden lg:table-cell',
+                                        )
                                     )}
                                     <TableHead className="pr-4">
                                         <span className="sr-only">Actions</span>
@@ -282,11 +297,11 @@ export default function PatientsIndex({ patients, filters, genders }: Props) {
                             <TableBody>
                                 {patients.data.map((patient) => (
                                     <TableRow key={patient.id}>
-                                        <TableCell className="pl-4 font-mono text-xs">
+                                        <TableCell className="hidden pl-4 font-mono text-xs sm:table-cell">
                                             {patient.mrn}
                                         </TableCell>
-                                        <TableCell>
-                                            <div className="flex items-center gap-2">
+                                        <TableCell className="pl-4 whitespace-normal sm:pl-2">
+                                            <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
                                                 <Link
                                                     href={show(patient.id)}
                                                     className="font-medium hover:underline"
@@ -304,13 +319,18 @@ export default function PatientsIndex({ patients, filters, genders }: Props) {
                                                     </Badge>
                                                 )}
                                             </div>
+                                            <div className="font-mono text-xs text-muted-foreground sm:hidden">
+                                                {patient.mrn}
+                                            </div>
                                         </TableCell>
                                         <TableCell>{patient.age}</TableCell>
-                                        <TableCell>
+                                        <TableCell className="hidden md:table-cell">
                                             {genderLabel(patient.gender)}
                                         </TableCell>
-                                        <TableCell>{patient.phone}</TableCell>
-                                        <TableCell>
+                                        <TableCell className="hidden sm:table-cell">
+                                            {patient.phone}
+                                        </TableCell>
+                                        <TableCell className="hidden lg:table-cell">
                                             {formatTimestamp(
                                                 patient.deleted_at ??
                                                     patient.created_at,
@@ -332,7 +352,11 @@ export default function PatientsIndex({ patients, filters, genders }: Props) {
                                                                     processing
                                                                 }
                                                             >
-                                                                <RotateCcw />
+                                                                {processing ? (
+                                                                    <Spinner />
+                                                                ) : (
+                                                                    <RotateCcw />
+                                                                )}
                                                                 Restore
                                                             </Button>
                                                         )}

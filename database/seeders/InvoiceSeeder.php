@@ -97,7 +97,7 @@ class InvoiceSeeder extends Seeder
         $invoice->items()->createMany($lines);
 
         // A few unpaid invoices raised by mistake were voided.
-        if (fake()->boolean(2)) {
+        if (fake()->boolean(1)) {
             $invoice->status = InvoiceStatus::Void;
             $invoice->voided_at = $issuedAt->addHour()->min($now);
             $invoice->voided_by = $adminId;
@@ -109,9 +109,10 @@ class InvoiceSeeder extends Seeder
         $daysAgo = $issuedAt->diffInDays($now);
         $roll = fake()->numberBetween(1, 100);
         [$paidInFull, $partlyPaid] = match (true) {
-            $daysAgo > 30 => [85, 95],
-            $daysAgo > 7 => [65, 85],
-            default => [45, 70],
+            $daysAgo > 60 => [99, 100],
+            $daysAgo > 30 => [96, 99],
+            $daysAgo > 7 => [88, 96],
+            default => [70, 88],
         };
 
         $amounts = match (true) {
