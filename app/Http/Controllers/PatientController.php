@@ -4,13 +4,16 @@ namespace App\Http\Controllers;
 
 use App\Enums\BloodGroup;
 use App\Enums\Gender;
+use App\Enums\InvoiceStatus;
 use App\Enums\Permission;
 use App\Http\Requests\Patients\StorePatientRequest;
 use App\Http\Requests\Patients\UpdatePatientRequest;
 use App\Http\Resources\AppointmentResource;
+use App\Http\Resources\InvoiceResource;
 use App\Http\Resources\PatientSummaryResource;
 use App\Http\Resources\VisitResource;
 use App\Models\Appointment;
+use App\Models\Invoice;
 use App\Models\Patient;
 use App\Models\User;
 use App\Models\Visit;
@@ -129,10 +132,32 @@ class PatientController extends Controller
             ->get()
             ->map(fn (Visit $visit) => VisitResource::make($visit)->resolve($request));
 
+        // Billing is only sent to billing staff; doctors don't receive it.
+        $billing = $user->can('viewAny', Invoice::class) ? [
+            'invoices' => $patient->invoices()
+                ->withSum('payments', 'amount')
+                ->orderByDesc('issued_at')
+                ->orderByDesc('id')
+                ->get()
+                ->each(fn (Invoice $invoice) => $invoice->setRelation('patient', $patient))
+                ->map(fn (Invoice $invoice) => InvoiceResource::make($invoice)->resolve($request)),
+            'uninvoicedVisits' => $patient->visits()
+                ->whereDoesntHave('invoices', fn (Builder $query) => $query->where('status', '!=', InvoiceStatus::Void))
+                ->with('doctor:id,name')
+                ->orderByDesc('visited_at')
+                ->get()
+                ->map(fn (Visit $visit): array => [
+                    'id' => $visit->id,
+                    'date' => $clinic->toLocal($visit->visited_at)->toDateString(),
+                    'doctor' => $visit->doctor->name,
+                ]),
+        ] : [];
+
         return Inertia::render('patients/show', [
             'patient' => $patient,
             'appointments' => $appointments,
             'visits' => $visits,
+            ...$billing,
             'today' => $clinic->today()->toDateString(),
         ]);
     }

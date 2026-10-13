@@ -1,16 +1,10 @@
 import { Form, Head, Link, setLayoutProps, usePage } from '@inertiajs/react';
-import {
-    Pencil,
-    Receipt,
-    RotateCcw,
-    Trash2,
-    TriangleAlert,
-} from 'lucide-react';
+import { Pencil, RotateCcw, Trash2, TriangleAlert } from 'lucide-react';
 import type { ReactNode } from 'react';
 import PatientController from '@/actions/App/Http/Controllers/PatientController';
 import DeletePatientDialog from '@/components/delete-patient-dialog';
-import EmptyState from '@/components/empty-state';
 import PatientAppointments from '@/components/patient-appointments';
+import PatientBilling from '@/components/patient-billing';
 import PatientVisits from '@/components/patient-visits';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
@@ -22,7 +16,13 @@ import { useInitials } from '@/hooks/use-initials';
 import { usePermissions } from '@/hooks/use-permissions';
 import { formatAge, formatDate, formatTimestamp } from '@/lib/dates';
 import { edit, index, show } from '@/routes/patients';
-import type { Appointment, Patient, Visit } from '@/types';
+import type {
+    Appointment,
+    Invoice,
+    Patient,
+    UninvoicedVisit,
+    Visit,
+} from '@/types';
 
 const TABS = ['overview', 'appointments', 'visits', 'billing'] as const;
 
@@ -63,22 +63,31 @@ export default function ShowPatient({
     patient,
     appointments,
     visits,
+    invoices,
+    uninvoicedVisits,
     today,
 }: {
     patient: Patient;
     appointments: Appointment[];
     visits: Visit[];
+    /** Only sent to billing staff. */
+    invoices?: Invoice[];
+    uninvoicedVisits?: UninvoicedVisit[];
     today: string;
 }) {
     const { can } = usePermissions();
     const getInitials = useInitials();
     const { url } = usePage();
+    const canSeeBilling = can('billing.view');
 
     // e.g. ?tab=visits after saving a visit.
     const requestedTab = new URL(url, 'http://localhost').searchParams.get(
         'tab',
     );
-    const initialTab = TABS.find((tab) => tab === requestedTab) ?? 'overview';
+    const initialTab =
+        TABS.filter((tab) => tab !== 'billing' || canSeeBilling).find(
+            (tab) => tab === requestedTab,
+        ) ?? 'overview';
     const isDeleted = patient.deleted_at !== null;
 
     setLayoutProps({
@@ -218,7 +227,9 @@ export default function ShowPatient({
                             Appointments
                         </TabsTrigger>
                         <TabsTrigger value="visits">Visits</TabsTrigger>
-                        <TabsTrigger value="billing">Billing</TabsTrigger>
+                        {canSeeBilling && (
+                            <TabsTrigger value="billing">Billing</TabsTrigger>
+                        )}
                     </TabsList>
 
                     <TabsContent value="overview">
@@ -302,13 +313,15 @@ export default function ShowPatient({
                         <PatientVisits patient={patient} visits={visits} />
                     </TabsContent>
 
-                    <TabsContent value="billing">
-                        <EmptyState
-                            icon={Receipt}
-                            title="No invoices yet"
-                            description="Invoices and payments for this patient will appear here."
-                        />
-                    </TabsContent>
+                    {canSeeBilling && (
+                        <TabsContent value="billing">
+                            <PatientBilling
+                                patient={patient}
+                                invoices={invoices ?? []}
+                                uninvoicedVisits={uninvoicedVisits ?? []}
+                            />
+                        </TabsContent>
+                    )}
                 </Tabs>
             </div>
         </>

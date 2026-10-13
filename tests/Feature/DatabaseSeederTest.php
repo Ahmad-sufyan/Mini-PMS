@@ -1,7 +1,10 @@
 <?php
 
 use App\Enums\AppointmentStatus;
+use App\Enums\InvoiceStatus;
 use App\Models\Appointment;
+use App\Models\Invoice;
+use App\Models\Service;
 use App\Models\Visit;
 use App\Support\ClinicSchedule;
 use Database\Seeders\DatabaseSeeder;
@@ -55,4 +58,23 @@ test('the demo data is realistic', function () {
         expect($visit->doctor_id)->toBe($visit->appointment->doctor_id)
             ->and($visit->patient_id)->toBe($visit->appointment->patient_id);
     });
+
+    // Billing: the price list, and invoices for most visits with a mix of
+    // statuses that match their payments, never overpaid.
+    $invoices = Invoice::withSum('payments', 'amount')->get();
+
+    expect(Service::count())->toBe(6)
+        ->and($invoices->count())->toBeGreaterThan((int) (Visit::count() * 0.75))
+        ->and($invoices->pluck('status')->map->value->unique()->all())->toContain('paid', 'partial', 'unpaid');
+
+    foreach ($invoices as $invoice) {
+        $paid = (int) $invoice->payments_sum_amount;
+
+        expect($paid)->toBeLessThanOrEqual($invoice->total)
+            ->and($invoice->total)->toBe($invoice->subtotal - $invoice->discount);
+
+        if ($invoice->status !== InvoiceStatus::Void) {
+            expect($invoice->status)->toBe(InvoiceStatus::fromPayments($paid, $invoice->total));
+        }
+    }
 });

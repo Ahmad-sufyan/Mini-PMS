@@ -1,13 +1,15 @@
 <?php
 
-use App\Enums\Permission;
 use App\Http\Controllers\AppointmentController;
 use App\Http\Controllers\AppointmentStatusController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\InvoiceController;
+use App\Http\Controllers\InvoicePaymentController;
 use App\Http\Controllers\PatientController;
 use App\Http\Controllers\StaffController;
 use App\Http\Controllers\VisitController;
 use App\Models\Appointment;
+use App\Models\Invoice;
 use App\Models\Patient;
 use App\Models\User;
 use Illuminate\Support\Facades\Route;
@@ -52,9 +54,20 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('{visit}/prescription', 'prescription')->can('printPrescription', 'visit')->name('prescription');
     });
 
-    Route::inertia('billing', 'billing/index')
-        ->can(Permission::ViewBilling)
-        ->name('billing.index');
+    Route::controller(InvoiceController::class)->prefix('invoices')->name('invoices.')->group(function () {
+        Route::get('/', 'index')->can('viewAny', Invoice::class)->name('index');
+        Route::get('create', 'create')->can('create', Invoice::class)->name('create');
+        Route::post('/', 'store')->can('create', Invoice::class)->name('store');
+        Route::get('{invoice}', 'show')->can('view', 'invoice')->name('show');
+        Route::get('{invoice}/edit', 'edit')->can('update', 'invoice')->name('edit');
+        Route::put('{invoice}', 'update')->can('update', 'invoice')->name('update');
+        Route::get('{invoice}/print', 'print')->can('view', 'invoice')->name('print');
+        Route::patch('{invoice}/void', 'void')->can('void', 'invoice')->name('void');
+    });
+
+    Route::post('invoices/{invoice}/payments', InvoicePaymentController::class)
+        ->can('recordPayment', 'invoice')
+        ->name('invoices.payments.store');
 
     Route::controller(StaffController::class)->prefix('staff')->name('staff.')->group(function () {
         Route::get('/', 'index')->can('viewAny', User::class)->name('index');

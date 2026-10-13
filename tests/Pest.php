@@ -84,6 +84,51 @@ function appointmentPayload(array $overrides = []): array
 }
 
 /**
+ * Bill in US dollars (two decimals) unless a test says otherwise.
+ */
+function useClinicCurrency(string $currency = 'USD'): void
+{
+    config(['clinic.currency' => $currency]);
+}
+
+/**
+ * Valid form data for an invoice dated 5 October 2026 with one $50.00
+ * line. A patient is created unless one is given.
+ *
+ * @param  array<string, mixed>  $overrides
+ * @return array<string, mixed>
+ */
+function invoicePayload(array $overrides = []): array
+{
+    return [
+        'issued_on' => '2026-10-05',
+        'discount' => '',
+        'notes' => '',
+        'items' => [
+            ['service_id' => '', 'description' => 'Consultation', 'quantity' => 1, 'unit_price' => '50.00'],
+        ],
+        ...$overrides,
+        'patient_id' => $overrides['patient_id'] ?? Patient::factory()->create()->id,
+    ];
+}
+
+/**
+ * Valid form data for a $10.00 cash payment on 6 October 2026.
+ *
+ * @param  array<string, mixed>  $overrides
+ * @return array<string, mixed>
+ */
+function paymentPayload(array $overrides = []): array
+{
+    return [
+        'amount' => '10.00',
+        'method' => 'cash',
+        'paid_on' => '2026-10-06',
+        ...$overrides,
+    ];
+}
+
+/**
  * Valid form data for recording a visit, with one medicine prescribed.
  *
  * @param  array<string, mixed>  $overrides
