@@ -1,5 +1,7 @@
 <?php
 
+use App\Models\Patient;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -43,6 +45,75 @@ expect()->extend('toBeOne', function () {
 | global functions to help you to reduce the number of lines of code in your test files.
 |
 */
+
+/**
+ * Pin the clinic's schedule so tests don't depend on the local .env:
+ * Monday to Saturday, 09:00 to 17:00, UTC unless overridden.
+ *
+ * @param  array<string, mixed>  $overrides
+ */
+function useClinicHours(array $overrides = []): void
+{
+    config([
+        'clinic.timezone' => 'UTC',
+        'clinic.opening_hours' => ['opens_at' => '09:00', 'closes_at' => '17:00'],
+        'clinic.working_days' => ['mon', 'tue', 'wed', 'thu', 'fri', 'sat'],
+        ...collect($overrides)->mapWithKeys(fn ($value, $key) => ["clinic.{$key}" => $value])->all(),
+    ]);
+}
+
+/**
+ * Valid form data for booking an appointment on Monday 19 October 2026 at
+ * 10:00. A patient and doctor are created unless given.
+ *
+ * @param  array<string, mixed>  $overrides
+ * @return array<string, mixed>
+ */
+function appointmentPayload(array $overrides = []): array
+{
+    return [
+        'date' => '2026-10-19',
+        'time' => '10:00',
+        'duration_minutes' => 30,
+        'reason' => 'Follow-up visit',
+        'notes' => '',
+        ...$overrides,
+        'patient_id' => $overrides['patient_id'] ?? Patient::factory()->create()->id,
+        'doctor_id' => $overrides['doctor_id'] ?? User::factory()->doctor()->create()->id,
+    ];
+}
+
+/**
+ * Valid form data for recording a visit, with one medicine prescribed.
+ *
+ * @param  array<string, mixed>  $overrides
+ * @return array<string, mixed>
+ */
+function visitPayload(array $overrides = []): array
+{
+    return [
+        'bp_systolic' => 120,
+        'bp_diastolic' => 80,
+        'pulse' => 72,
+        'temperature' => 36.8,
+        'weight_kg' => 70,
+        'height_cm' => 175,
+        'chief_complaint' => 'Cough for three days',
+        'diagnosis' => 'Acute bronchitis',
+        'clinical_notes' => 'Chest clear on examination.',
+        'follow_up_date' => '',
+        'prescriptions' => [
+            [
+                'medicine' => 'Paracetamol',
+                'dosage' => '500 mg',
+                'frequency' => 'Three times daily',
+                'duration' => '5 days',
+                'instructions' => 'After meals',
+            ],
+        ],
+        ...$overrides,
+    ];
+}
 
 /**
  * Valid form data for registering or updating a (fake) patient.

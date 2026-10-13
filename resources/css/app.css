@@ -141,3 +141,17 @@
         @apply bg-background text-foreground;
     }
 }
+
+/* Printed pages (e.g. prescriptions) are always black on white A4. */
+@media print {
+    @page {
+        size: A4;
+        margin: 15mm;
+    }
+
+    html,
+    body {
+        background: white !important;
+        color: black !important;
+    }
+}

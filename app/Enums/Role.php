@@ -32,10 +32,16 @@ enum Role: string
     public function permissions(): array
     {
         return match ($this) {
-            self::Admin => Permission::cases(),
+            // Admins can read clinical records but only doctors record visits.
+            self::Admin => array_values(array_filter(
+                Permission::cases(),
+                fn (Permission $permission): bool => $permission !== Permission::RecordVisits,
+            )),
             self::Doctor => [
                 Permission::ViewPatients,
                 Permission::ViewAppointments,
+                Permission::ViewClinicalRecords,
+                Permission::RecordVisits,
             ],
             self::Receptionist => [
                 Permission::ViewPatients,

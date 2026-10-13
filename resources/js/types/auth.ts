@@ -11,6 +11,8 @@ export type Permission =
     | 'patients.delete'
     | 'appointments.view'
     | 'appointments.manage'
+    | 'clinical.view'
+    | 'visits.record'
     | 'billing.view'
     | 'billing.manage'
     | 'staff.manage';

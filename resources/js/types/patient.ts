@@ -46,6 +46,17 @@ export type PatientListItem = Pick<
     | 'deleted_at'
 >;
 
+/**
+ * The few details needed to pick out a patient (PatientSummaryResource).
+ */
+export type PatientSummary = {
+    id: number;
+    mrn: string;
+    full_name: string;
+    age: number;
+    phone: string;
+};
+
 export type PatientSort = 'name' | 'mrn' | 'age' | 'registered';
 
 export type PatientFilters = {

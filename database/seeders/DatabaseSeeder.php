@@ -43,5 +43,10 @@ class DatabaseSeeder extends Seeder
         ]);
 
         Patient::factory()->count(60)->create();
+
+        $this->call([
+            AppointmentSeeder::class,
+            VisitSeeder::class,
+        ]);
     }
 }
