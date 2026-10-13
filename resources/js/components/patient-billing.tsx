@@ -108,8 +108,10 @@ export default function PatientBilling({
                         <TableHeader>
                             <TableRow>
                                 <TableHead className="pl-4">Invoice</TableHead>
-                                <TableHead>Issued</TableHead>
-                                <TableHead className="text-right">
+                                <TableHead className="hidden sm:table-cell">
+                                    Issued
+                                </TableHead>
+                                <TableHead className="hidden text-right md:table-cell">
                                     Total
                                 </TableHead>
                                 <TableHead className="text-right">
@@ -129,10 +131,10 @@ export default function PatientBilling({
                                             {invoice.invoice_number}
                                         </Link>
                                     </TableCell>
-                                    <TableCell>
+                                    <TableCell className="hidden sm:table-cell">
                                         {formatDate(invoice.issued_on)}
                                     </TableCell>
-                                    <TableCell className="text-right tabular-nums">
+                                    <TableCell className="hidden text-right tabular-nums md:table-cell">
                                         {format(invoice.total)}
                                     </TableCell>
                                     <TableCell className="text-right font-medium tabular-nums">

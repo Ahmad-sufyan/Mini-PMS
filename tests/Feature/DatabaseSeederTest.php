@@ -4,7 +4,9 @@ use App\Enums\AppointmentStatus;
 use App\Enums\InvoiceStatus;
 use App\Models\Appointment;
 use App\Models\Invoice;
+use App\Models\Patient;
 use App\Models\Service;
+use App\Models\User;
 use App\Models\Visit;
 use App\Support\ClinicSchedule;
 use Database\Seeders\DatabaseSeeder;
@@ -16,18 +18,28 @@ test('the demo data is realistic', function () {
 
     $this->seed(DatabaseSeeder::class);
 
-    // Appointments: the past 60 and next 14 days, within opening hours,
+    // Staff and patients: the demo logins, a former colleague who can't
+    // sign in, and a couple of deleted duplicate records nobody booked.
+    expect(User::where('email', 'like', '%@demo.test')->where('is_active', true)->count())->toBe(5)
+        ->and(User::where('is_active', false)->pluck('email')->all())->toBe(['leo.morgan@demo.test'])
+        ->and(Patient::count())->toBe(400)
+        ->and(Patient::onlyTrashed()->count())->toBe(2)
+        ->and(Appointment::whereIn('patient_id', Patient::onlyTrashed()->select('id'))->count())->toBe(0);
+
+    // Appointments: from the start of the month five months ago to 14 days
+    // ahead, within opening hours, booked after the patient registered,
     // with statuses that fit the date and no double-booked doctors.
-    $appointments = Appointment::all();
+    $appointments = Appointment::with('patient:id,created_at')->get();
     $clinic = app(ClinicSchedule::class);
     $now = now();
 
     expect($appointments)->not->toBeEmpty()
-        ->and($appointments->min('starts_at')->toDateString())->toBe('2026-08-22')
+        ->and($appointments->min('starts_at')->toDateString())->toBe('2026-05-01')
         ->and($appointments->max('starts_at')->toDateString())->toBe('2026-11-04');
 
     foreach ($appointments as $appointment) {
-        expect($clinic->isWithinOpeningHours($appointment->starts_at, $appointment->ends_at))->toBeTrue();
+        expect($clinic->isWithinOpeningHours($appointment->starts_at, $appointment->ends_at))->toBeTrue()
+            ->and($appointment->created_at->gte($appointment->patient->created_at))->toBeTrue();
 
         if ($appointment->ends_at->lte($now)) {
             expect($appointment->status)->toBeIn([AppointmentStatus::Completed, AppointmentStatus::Cancelled, AppointmentStatus::NoShow]);

@@ -43,8 +43,12 @@ function AppointmentSection({
                         <TableHeader>
                             <TableRow>
                                 <TableHead className="pl-4">When</TableHead>
-                                <TableHead>Doctor</TableHead>
-                                <TableHead>Reason</TableHead>
+                                <TableHead className="hidden md:table-cell">
+                                    Doctor
+                                </TableHead>
+                                <TableHead className="hidden lg:table-cell">
+                                    Reason
+                                </TableHead>
                                 <TableHead>Status</TableHead>
                                 <TableHead className="pr-4">
                                     <span className="sr-only">Actions</span>
@@ -63,10 +67,10 @@ function AppointmentSection({
                                             {appointment.end_time}
                                         </div>
                                     </TableCell>
-                                    <TableCell>
+                                    <TableCell className="hidden md:table-cell">
                                         {appointment.doctor.name}
                                     </TableCell>
-                                    <TableCell className="max-w-56 truncate">
+                                    <TableCell className="hidden max-w-56 truncate lg:table-cell">
                                         {appointment.reason}
                                     </TableCell>
                                     <TableCell>

@@ -259,10 +259,16 @@ export default function AppointmentsIndex({
                                     <TableHead className="pl-4">Time</TableHead>
                                     <TableHead>Patient</TableHead>
                                     {showDoctor && (
-                                        <TableHead>Doctor</TableHead>
+                                        <TableHead className="hidden md:table-cell">
+                                            Doctor
+                                        </TableHead>
                                     )}
-                                    <TableHead>Reason</TableHead>
-                                    <TableHead>Status</TableHead>
+                                    <TableHead className="hidden lg:table-cell">
+                                        Reason
+                                    </TableHead>
+                                    <TableHead className="hidden sm:table-cell">
+                                        Status
+                                    </TableHead>
                                     <TableHead className="pr-4">
                                         <span className="sr-only">Actions</span>
                                     </TableHead>
@@ -283,8 +289,16 @@ export default function AppointmentsIndex({
                                                     )}
                                                 </div>
                                             )}
+                                            <div className="mt-1 sm:hidden">
+                                                <AppointmentStatusBadge
+                                                    status={appointment.status}
+                                                    label={
+                                                        appointment.status_label
+                                                    }
+                                                />
+                                            </div>
                                         </TableCell>
-                                        <TableCell>
+                                        <TableCell className="whitespace-normal">
                                             <Link
                                                 href={show(
                                                     appointment.patient.id,
@@ -298,7 +312,7 @@ export default function AppointmentsIndex({
                                             </div>
                                         </TableCell>
                                         {showDoctor && (
-                                            <TableCell>
+                                            <TableCell className="hidden md:table-cell">
                                                 <div>
                                                     {appointment.doctor.name}
                                                 </div>
@@ -310,17 +324,17 @@ export default function AppointmentsIndex({
                                                 </div>
                                             </TableCell>
                                         )}
-                                        <TableCell className="max-w-56 truncate">
+                                        <TableCell className="hidden max-w-56 truncate lg:table-cell">
                                             {appointment.reason}
                                         </TableCell>
-                                        <TableCell>
+                                        <TableCell className="hidden sm:table-cell">
                                             <AppointmentStatusBadge
                                                 status={appointment.status}
                                                 label={appointment.status_label}
                                             />
                                         </TableCell>
-                                        <TableCell className="pr-4">
-                                            <div className="flex items-center justify-end gap-2">
+                                        <TableCell className="pr-4 whitespace-normal">
+                                            <div className="flex flex-wrap items-center justify-end gap-2">
                                                 <AppointmentStatusActions
                                                     appointment={appointment}
                                                 />

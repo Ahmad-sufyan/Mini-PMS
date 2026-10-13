@@ -11,6 +11,7 @@ import {
     DialogTitle,
     DialogTrigger,
 } from '@/components/ui/dialog';
+import { Spinner } from '@/components/ui/spinner';
 import type { Invoice } from '@/types';
 
 export default function VoidInvoiceDialog({ invoice }: { invoice: Invoice }) {
@@ -43,6 +44,7 @@ export default function VoidInvoiceDialog({ invoice }: { invoice: Invoice }) {
                                 disabled={processing}
                                 data-test="confirm-void-invoice-button"
                             >
+                                {processing && <Spinner />}
                                 Void invoice
                             </Button>
                         </DialogFooter>

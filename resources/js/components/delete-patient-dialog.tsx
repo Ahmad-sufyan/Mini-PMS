@@ -11,6 +11,7 @@ import {
     DialogTitle,
     DialogTrigger,
 } from '@/components/ui/dialog';
+import { Spinner } from '@/components/ui/spinner';
 import type { Patient } from '@/types';
 
 export default function DeletePatientDialog({ patient }: { patient: Patient }) {
@@ -45,6 +46,7 @@ export default function DeletePatientDialog({ patient }: { patient: Patient }) {
                                     type="submit"
                                     data-test="confirm-delete-patient-button"
                                 >
+                                    {processing && <Spinner />}
                                     Delete record
                                 </button>
                             </Button>

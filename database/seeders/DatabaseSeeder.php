@@ -5,6 +5,7 @@ namespace Database\Seeders;
 use App\Models\Patient;
 use App\Models\User;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
 
 class DatabaseSeeder extends Seeder
 {
@@ -42,7 +43,20 @@ class DatabaseSeeder extends Seeder
             'email' => 'doctor3@demo.test',
         ]);
 
-        Patient::factory()->count(60)->create();
+        // A locum who has since left keeps an account, but can't sign in.
+        User::factory()->receptionist()->create([
+            'name' => 'Leo Morgan',
+            'email' => 'leo.morgan@demo.test',
+            'is_active' => false,
+        ]);
+
+        // One transaction keeps SQLite from syncing to disk after every insert.
+        DB::transaction(function (): void {
+            Patient::factory()->count(400)->create();
+
+            // Two duplicate registrations were deleted before anyone booked them.
+            Patient::factory()->count(2)->create()->each(fn (Patient $patient) => $patient->delete());
+        });
 
         $this->call([
             AppointmentSeeder::class,

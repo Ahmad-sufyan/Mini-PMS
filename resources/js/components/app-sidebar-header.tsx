@@ -1,5 +1,7 @@
 import { Breadcrumbs } from '@/components/breadcrumbs';
+import PatientSearch from '@/components/patient-search';
 import { SidebarTrigger } from '@/components/ui/sidebar';
+import { usePermissions } from '@/hooks/use-permissions';
 import type { BreadcrumbItem as BreadcrumbItemType } from '@/types';
 
 export function AppSidebarHeader({
@@ -7,12 +9,22 @@ export function AppSidebarHeader({
 }: {
     breadcrumbs?: BreadcrumbItemType[];
 }) {
+    const { can } = usePermissions();
+
     return (
         <header className="flex h-16 shrink-0 items-center gap-2 border-b border-sidebar-border/50 px-6 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12 md:px-4">
-            <div className="flex items-center gap-2">
+            <div className="flex min-w-0 items-center gap-2">
                 <SidebarTrigger className="-ml-1" />
-                <Breadcrumbs breadcrumbs={breadcrumbs} />
+                <div className="min-w-0 truncate">
+                    <Breadcrumbs breadcrumbs={breadcrumbs} />
+                </div>
             </div>
+
+            {can('patients.view') && (
+                <div className="ml-auto shrink-0">
+                    <PatientSearch />
+                </div>
+            )}
         </header>
     );
 }
