@@ -65,13 +65,13 @@ test('front desk staff see every doctor\'s appointments', function (Role $role) 
         );
 })->with([Role::Admin, Role::Receptionist]);
 
-test('doctors can check in and complete their own appointments', function () {
+test('doctors can check in their own appointments but only complete them by recording the visit', function () {
     $this->actingAs($this->doctor);
 
     $this->patch(route('appointments.status', [$this->own, 'checked_in']))->assertSessionHasNoErrors();
-    $this->patch(route('appointments.status', [$this->own, 'completed']))->assertSessionHasNoErrors();
+    $this->patch(route('appointments.status', [$this->own, 'completed']))->assertForbidden();
 
-    expect($this->own->fresh()->status)->toBe(AppointmentStatus::Completed);
+    expect($this->own->fresh()->status)->toBe(AppointmentStatus::CheckedIn);
 });
 
 test('doctors cannot change another doctor\'s appointments', function () {

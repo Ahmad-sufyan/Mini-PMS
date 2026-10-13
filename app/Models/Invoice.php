@@ -50,6 +50,12 @@ class Invoice extends Model
     use HasFactory;
 
     /**
+     * The largest amount, in minor units, that the billing columns can hold
+     * (an unsigned 32-bit integer).
+     */
+    public const int MAX_AMOUNT = 4_294_967_295;
+
+    /**
      * The model's default values for attributes.
      *
      * @var array<string, mixed>

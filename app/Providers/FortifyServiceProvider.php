@@ -4,6 +4,7 @@ namespace App\Providers;
 
 use App\Actions\Fortify\AuthenticateActiveUser;
 use App\Actions\Fortify\ResetUserPassword;
+use App\Http\Responses\PasswordResetLinkSentResponse;
 use App\Models\User;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
@@ -12,6 +13,7 @@ use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rules\Password;
 use Inertia\Inertia;
+use Laravel\Fortify\Contracts\FailedPasswordResetLinkRequestResponse;
 use Laravel\Fortify\Features;
 use Laravel\Fortify\Fortify;
 use Laravel\Passkeys\Contracts\PasskeyUser;
@@ -24,7 +26,7 @@ class FortifyServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        $this->app->bind(FailedPasswordResetLinkRequestResponse::class, PasswordResetLinkSentResponse::class);
     }
 
     /**
@@ -97,15 +99,20 @@ class FortifyServiceProvider extends ServiceProvider
         });
 
         RateLimiter::for('login', function (Request $request) {
-            $throttleKey = Str::transliterate(Str::lower($request->input(Fortify::username())).'|'.$request->ip());
+            // This runs before validation, so the username may not be a string.
+            $username = $request->input(Fortify::username());
+            $throttleKey = Str::transliterate(Str::lower(is_string($username) ? $username : '').'|'.$request->ip());
 
             return Limit::perMinute(5)->by($throttleKey);
         });
 
+        // Keyed on the session and IP address rather than anything in the
+        // request body, which the client could change on every attempt.
         RateLimiter::for('passkeys', function (Request $request) {
-            return Limit::perMinute(10)->by(
-                ($request->input('credential.id') ?: $request->session()->getId()).'|'.$request->ip(),
-            );
+            return [
+                Limit::perMinute(10)->by('session:'.$request->session()->getId().'|'.$request->ip()),
+                Limit::perMinute(60)->by('ip:'.$request->ip()),
+            ];
         });
     }
 }
