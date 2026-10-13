@@ -119,6 +119,16 @@ class Patient extends Model
     }
 
     /**
+     * Get the patient's invoices.
+     *
+     * @return HasMany<Invoice, $this>
+     */
+    public function invoices(): HasMany
+    {
+        return $this->hasMany(Invoice::class);
+    }
+
+    /**
      * Get the patient's full name.
      *
      * @return Attribute<non-falsy-string, never>

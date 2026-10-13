@@ -8,7 +8,7 @@ import {
 import { usePermissions } from '@/hooks/use-permissions';
 import { dashboard } from '@/routes';
 import { index as appointments } from '@/routes/appointments';
-import { index as billing } from '@/routes/billing';
+import { index as invoices } from '@/routes/invoices';
 import { index as patients } from '@/routes/patients';
 import { index as staff } from '@/routes/staff';
 import type { NavItem } from '@/types';
@@ -33,7 +33,7 @@ const mainNavItems: NavItem[] = [
     },
     {
         title: 'Billing',
-        href: billing(),
+        href: invoices(),
         icon: Receipt,
         permission: 'billing.view',
     },

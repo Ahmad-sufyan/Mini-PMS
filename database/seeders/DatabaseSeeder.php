@@ -47,6 +47,8 @@ class DatabaseSeeder extends Seeder
         $this->call([
             AppointmentSeeder::class,
             VisitSeeder::class,
+            ServiceSeeder::class,
+            InvoiceSeeder::class,
         ]);
     }
 }

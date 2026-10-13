@@ -15,6 +15,7 @@ export type Permission =
     | 'visits.record'
     | 'billing.view'
     | 'billing.manage'
+    | 'billing.void'
     | 'staff.manage';
 
 export type User = {

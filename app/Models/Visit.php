@@ -117,6 +117,16 @@ class Visit extends Model
     }
 
     /**
+     * Get the invoices raised for the visit (at most one that isn't void).
+     *
+     * @return HasMany<Invoice, $this>
+     */
+    public function invoices(): HasMany
+    {
+        return $this->hasMany(Invoice::class);
+    }
+
+    /**
      * Get the body mass index from the weight and height, if both were taken.
      */
     public function bmi(): ?float

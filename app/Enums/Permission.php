@@ -20,5 +20,6 @@ enum Permission: string
     case RecordVisits = 'visits.record';
     case ViewBilling = 'billing.view';
     case ManageBilling = 'billing.manage';
+    case VoidInvoices = 'billing.void';
     case ManageStaff = 'staff.manage';
 }

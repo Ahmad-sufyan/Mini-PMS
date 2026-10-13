@@ -11,7 +11,7 @@ dataset('module access', function () {
         'dashboard' => [Role::Admin, Role::Doctor, Role::Receptionist],
         'patients.index' => [Role::Admin, Role::Doctor, Role::Receptionist],
         'appointments.index' => [Role::Admin, Role::Doctor, Role::Receptionist],
-        'billing.index' => [Role::Admin, Role::Receptionist],
+        'invoices.index' => [Role::Admin, Role::Receptionist],
         'staff.index' => [Role::Admin],
         'staff.create' => [Role::Admin],
     ];
@@ -35,7 +35,7 @@ test('modules are only accessible to the roles allowed to use them', function (R
 
 test('guests are redirected to the login page', function (string $route) {
     $this->get(route($route))->assertRedirect(route('login'));
-})->with(['dashboard', 'patients.index', 'appointments.index', 'billing.index', 'staff.index']);
+})->with(['dashboard', 'patients.index', 'appointments.index', 'invoices.index', 'staff.index']);
 
 test('only admins can manage staff accounts', function (Role $role) {
     $user = User::factory()->create(['role' => $role]);
