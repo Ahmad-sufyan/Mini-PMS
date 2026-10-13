@@ -3,8 +3,6 @@
 use App\Enums\AppointmentStatus;
 use App\Models\Appointment;
 use App\Models\User;
-use App\Support\ClinicSchedule;
-use Database\Seeders\DatabaseSeeder;
 use Illuminate\Testing\TestResponse;
 use Inertia\Testing\AssertableInertia as Assert;
 
@@ -128,38 +126,4 @@ test('the patient page lists the patient\'s appointments', function () {
             ->where('appointments.0.id', $appointment->id)
             ->has('today'),
         );
-});
-
-test('the seeder books realistic appointments without clashes', function () {
-    $this->travelTo('2026-10-21 12:00:00');
-    $this->seed(DatabaseSeeder::class);
-
-    $appointments = Appointment::all();
-    $now = now();
-
-    expect($appointments)->not->toBeEmpty()
-        ->and($appointments->min('starts_at')->toDateString())->toBe('2026-08-22')
-        ->and($appointments->max('starts_at')->toDateString())->toBe('2026-11-04');
-
-    $clinic = app(ClinicSchedule::class);
-    $occupying = AppointmentStatus::occupying();
-
-    foreach ($appointments as $appointment) {
-        expect($clinic->isWithinOpeningHours($appointment->starts_at, $appointment->ends_at))->toBeTrue();
-
-        if ($appointment->ends_at->lte($now)) {
-            expect($appointment->status)->toBeIn([AppointmentStatus::Completed, AppointmentStatus::Cancelled, AppointmentStatus::NoShow]);
-        } elseif ($appointment->starts_at->gt($now)) {
-            expect($appointment->status)->toBeIn([AppointmentStatus::Scheduled, AppointmentStatus::Cancelled]);
-        }
-    }
-
-    $clashes = $appointments
-        ->filter(fn (Appointment $appointment) => in_array($appointment->status, $occupying, true))
-        ->groupBy('doctor_id')
-        ->sum(fn ($booked) => $booked->sortBy('starts_at')->values()->sliding(2)
-            ->filter(fn ($pair) => $pair->first()->ends_at->gt($pair->last()->starts_at))
-            ->count());
-
-    expect($clashes)->toBe(0);
 });

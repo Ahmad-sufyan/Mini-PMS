@@ -14,6 +14,10 @@ enum Permission: string
     case DeletePatients = 'patients.delete';
     case ViewAppointments = 'appointments.view';
     case ManageAppointments = 'appointments.manage';
+    // Diagnoses, clinical notes, vitals and prescriptions. Staff without it
+    // never receive those fields (see VisitResource).
+    case ViewClinicalRecords = 'clinical.view';
+    case RecordVisits = 'visits.record';
     case ViewBilling = 'billing.view';
     case ManageBilling = 'billing.manage';
     case ManageStaff = 'staff.manage';

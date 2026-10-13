@@ -84,18 +84,27 @@ class AppointmentSeeder extends Seeder
             return;
         }
 
+        // The pediatrician sees children when there are any.
+        $childIds = Patient::query()
+            ->where('date_of_birth', '>', $clinic->today()->subYears(16)->toDateString())
+            ->pluck('id');
+
         $now = $clinic->now();
         $lastDay = $clinic->today()->addDays(14);
 
         // One transaction keeps SQLite from syncing to disk after every insert.
-        DB::transaction(function () use ($clinic, $now, $lastDay, $doctors, $patientIds, $bookerIds): void {
+        DB::transaction(function () use ($clinic, $now, $lastDay, $doctors, $patientIds, $childIds, $bookerIds): void {
             for ($day = $clinic->today()->subDays(60); $day->lte($lastDay); $day = $day->addDay()) {
                 if (! $clinic->isWorkingDay($day)) {
                     continue;
                 }
 
                 foreach ($doctors as $doctor) {
-                    $this->bookDay($clinic, $day, $doctor, $patientIds, $bookerIds, $now);
+                    $patients = $doctor->specialization === 'Pediatrics' && $childIds->isNotEmpty()
+                        ? $childIds
+                        : $patientIds;
+
+                    $this->bookDay($clinic, $day, $doctor, $patients, $bookerIds, $now);
                 }
             }
         });

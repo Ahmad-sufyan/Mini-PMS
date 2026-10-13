@@ -1,9 +1,7 @@
 import { useState } from 'react';
-import type { ReactNode } from 'react';
 import Heading from '@/components/heading';
-import InputError from '@/components/input-error';
+import Field from '@/components/form-field';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import {
     Select,
     SelectContent,
@@ -23,36 +21,6 @@ type Props = {
     errors: Partial<Record<string, string>>;
     patient?: Patient;
 };
-
-function Field({
-    id,
-    label,
-    optional = false,
-    error,
-    children,
-}: {
-    id: string;
-    label: string;
-    optional?: boolean;
-    error?: string;
-    children: ReactNode;
-}) {
-    return (
-        <div className="grid gap-2">
-            <Label htmlFor={id}>
-                {label}
-                {optional && (
-                    <span className="font-normal text-muted-foreground">
-                        {' '}
-                        (optional)
-                    </span>
-                )}
-            </Label>
-            {children}
-            <InputError message={error} />
-        </div>
-    );
-}
 
 export default function PatientFormFields({
     genders,

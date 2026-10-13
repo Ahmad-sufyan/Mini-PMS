@@ -13,6 +13,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 /**
  * @property int $id
@@ -30,6 +31,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property-read Patient $patient
  * @property-read User $doctor
  * @property-read User|null $creator
+ * @property-read Visit|null $visit
  */
 #[Fillable(['patient_id', 'doctor_id', 'starts_at', 'duration_minutes', 'reason', 'notes'])]
 class Appointment extends Model
@@ -97,6 +99,16 @@ class Appointment extends Model
     public function doctor(): BelongsTo
     {
         return $this->belongsTo(User::class, 'doctor_id');
+    }
+
+    /**
+     * Get the consultation record of the appointment, once the doctor saved it.
+     *
+     * @return HasOne<Visit, $this>
+     */
+    public function visit(): HasOne
+    {
+        return $this->hasOne(Visit::class);
     }
 
     /**

@@ -109,6 +109,16 @@ class Patient extends Model
     }
 
     /**
+     * Get the patient's visits (consultation records).
+     *
+     * @return HasMany<Visit, $this>
+     */
+    public function visits(): HasMany
+    {
+        return $this->hasMany(Visit::class);
+    }
+
+    /**
      * Get the patient's full name.
      *
      * @return Attribute<non-falsy-string, never>

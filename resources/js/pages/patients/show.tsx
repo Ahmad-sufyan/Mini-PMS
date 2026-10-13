@@ -1,9 +1,8 @@
-import { Form, Head, Link, setLayoutProps } from '@inertiajs/react';
+import { Form, Head, Link, setLayoutProps, usePage } from '@inertiajs/react';
 import {
     Pencil,
     Receipt,
     RotateCcw,
-    Stethoscope,
     Trash2,
     TriangleAlert,
 } from 'lucide-react';
@@ -12,6 +11,7 @@ import PatientController from '@/actions/App/Http/Controllers/PatientController'
 import DeletePatientDialog from '@/components/delete-patient-dialog';
 import EmptyState from '@/components/empty-state';
 import PatientAppointments from '@/components/patient-appointments';
+import PatientVisits from '@/components/patient-visits';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
@@ -22,7 +22,9 @@ import { useInitials } from '@/hooks/use-initials';
 import { usePermissions } from '@/hooks/use-permissions';
 import { formatAge, formatDate, formatTimestamp } from '@/lib/dates';
 import { edit, index, show } from '@/routes/patients';
-import type { Appointment, Patient } from '@/types';
+import type { Appointment, Patient, Visit } from '@/types';
+
+const TABS = ['overview', 'appointments', 'visits', 'billing'] as const;
 
 const capitalize = (value: string): string =>
     value.charAt(0).toUpperCase() + value.slice(1);
@@ -60,14 +62,23 @@ function DetailsCard({
 export default function ShowPatient({
     patient,
     appointments,
+    visits,
     today,
 }: {
     patient: Patient;
     appointments: Appointment[];
+    visits: Visit[];
     today: string;
 }) {
     const { can } = usePermissions();
     const getInitials = useInitials();
+    const { url } = usePage();
+
+    // e.g. ?tab=visits after saving a visit.
+    const requestedTab = new URL(url, 'http://localhost').searchParams.get(
+        'tab',
+    );
+    const initialTab = TABS.find((tab) => tab === requestedTab) ?? 'overview';
     const isDeleted = patient.deleted_at !== null;
 
     setLayoutProps({
@@ -200,7 +211,7 @@ export default function ShowPatient({
                     </CardContent>
                 </Card>
 
-                <Tabs defaultValue="overview" className="gap-4">
+                <Tabs defaultValue={initialTab} className="gap-4">
                     <TabsList>
                         <TabsTrigger value="overview">Overview</TabsTrigger>
                         <TabsTrigger value="appointments">
@@ -288,11 +299,7 @@ export default function ShowPatient({
                     </TabsContent>
 
                     <TabsContent value="visits">
-                        <EmptyState
-                            icon={Stethoscope}
-                            title="No visits recorded"
-                            description="Consultation notes from each visit will appear here."
-                        />
+                        <PatientVisits patient={patient} visits={visits} />
                     </TabsContent>
 
                     <TabsContent value="billing">

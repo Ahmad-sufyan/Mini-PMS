@@ -84,6 +84,38 @@ function appointmentPayload(array $overrides = []): array
 }
 
 /**
+ * Valid form data for recording a visit, with one medicine prescribed.
+ *
+ * @param  array<string, mixed>  $overrides
+ * @return array<string, mixed>
+ */
+function visitPayload(array $overrides = []): array
+{
+    return [
+        'bp_systolic' => 120,
+        'bp_diastolic' => 80,
+        'pulse' => 72,
+        'temperature' => 36.8,
+        'weight_kg' => 70,
+        'height_cm' => 175,
+        'chief_complaint' => 'Cough for three days',
+        'diagnosis' => 'Acute bronchitis',
+        'clinical_notes' => 'Chest clear on examination.',
+        'follow_up_date' => '',
+        'prescriptions' => [
+            [
+                'medicine' => 'Paracetamol',
+                'dosage' => '500 mg',
+                'frequency' => 'Three times daily',
+                'duration' => '5 days',
+                'instructions' => 'After meals',
+            ],
+        ],
+        ...$overrides,
+    ];
+}
+
+/**
  * Valid form data for registering or updating a (fake) patient.
  *
  * @param  array<string, mixed>  $overrides

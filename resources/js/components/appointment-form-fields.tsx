@@ -1,9 +1,7 @@
 import { useState } from 'react';
-import type { ReactNode } from 'react';
-import InputError from '@/components/input-error';
+import Field from '@/components/form-field';
 import PatientPicker from '@/components/patient-picker';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import {
     Select,
     SelectContent,
@@ -29,36 +27,6 @@ type Props = {
     appointment?: Appointment;
     defaultDate?: string;
 };
-
-function Field({
-    id,
-    label,
-    optional = false,
-    error,
-    children,
-}: {
-    id: string;
-    label: string;
-    optional?: boolean;
-    error?: string;
-    children: ReactNode;
-}) {
-    return (
-        <div className="grid gap-2">
-            <Label htmlFor={id}>
-                {label}
-                {optional && (
-                    <span className="font-normal text-muted-foreground">
-                        {' '}
-                        (optional)
-                    </span>
-                )}
-            </Label>
-            {children}
-            <InputError message={error} />
-        </div>
-    );
-}
 
 export default function AppointmentFormFields({
     doctors,

@@ -84,20 +84,24 @@ test('the role and permissions are shared with the frontend', function () {
             ->component('dashboard')
             ->where('auth.user.role', 'doctor')
             ->where('auth.role', ['value' => 'doctor', 'label' => 'Doctor'])
-            ->where('auth.permissions', ['patients.view', 'appointments.view'])
+            ->where('auth.permissions', ['patients.view', 'appointments.view', 'clinical.view', 'visits.record'])
             ->has('clinic.name'),
         );
 });
 
-test('admins are granted every permission', function () {
+test('admins are granted every permission except recording visits', function () {
     $admin = User::factory()->admin()->create();
+
+    $expected = array_values(array_map(
+        fn (Permission $permission) => $permission->value,
+        array_filter(Permission::cases(), fn (Permission $permission) => $permission !== Permission::RecordVisits),
+    ));
 
     $this->actingAs($admin)
         ->get(route('dashboard'))
         ->assertInertia(fn (Assert $page) => $page
-            ->where('auth.permissions', array_map(
-                fn (Permission $permission) => $permission->value,
-                Permission::cases(),
-            )),
+            ->where('auth.permissions', $expected),
         );
+
+    expect($expected)->toContain('clinical.view')->not->toContain('visits.record');
 });

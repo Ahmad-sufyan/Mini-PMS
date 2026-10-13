@@ -4,6 +4,7 @@ namespace App\Http\Resources;
 
 use App\Enums\AppointmentStatus;
 use App\Models\Appointment;
+use App\Models\Visit;
 use App\Support\ClinicSchedule;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
@@ -26,6 +27,10 @@ class AppointmentResource extends JsonResource
         $clinic = app(ClinicSchedule::class);
         $start = $clinic->toLocal($this->starts_at);
         $user = $request->user();
+
+        // The appointment's doctor completes a checked-in appointment by
+        // saving the visit, so "Start visit" replaces their Complete button.
+        $canStartVisit = $user?->can('create', [Visit::class, $this->resource]) ?? false;
 
         return [
             'id' => $this->id,
@@ -52,9 +57,11 @@ class AppointmentResource extends JsonResource
                 fn (AppointmentStatus $status): array => ['value' => $status->value, 'label' => $status->actionLabel()],
                 array_filter(
                     $this->status->nextStatuses(),
-                    fn (AppointmentStatus $status): bool => $user?->can('changeStatus', [$this->resource, $status]) ?? false,
+                    fn (AppointmentStatus $status): bool => ! ($canStartVisit && $status === AppointmentStatus::Completed)
+                        && ($user?->can('changeStatus', [$this->resource, $status]) ?? false),
                 ),
             )),
+            'can_start_visit' => $canStartVisit,
             'can_edit' => $user?->can('update', $this->resource) ?? false,
         ];
     }

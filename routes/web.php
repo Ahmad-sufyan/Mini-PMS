@@ -6,6 +6,7 @@ use App\Http\Controllers\AppointmentStatusController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\PatientController;
 use App\Http\Controllers\StaffController;
+use App\Http\Controllers\VisitController;
 use App\Models\Appointment;
 use App\Models\Patient;
 use App\Models\User;
@@ -40,6 +41,16 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::patch('appointments/{appointment}/status/{status}', AppointmentStatusController::class)
         ->can('changeStatus', ['appointment', 'status'])
         ->name('appointments.status');
+
+    // Creating a visit is authorized in the controller and form request, as
+    // it depends on the appointment being visited.
+    Route::controller(VisitController::class)->prefix('visits')->name('visits.')->group(function () {
+        Route::get('create', 'create')->name('create');
+        Route::post('/', 'store')->name('store');
+        Route::get('{visit}/edit', 'edit')->can('update', 'visit')->name('edit');
+        Route::put('{visit}', 'update')->can('update', 'visit')->name('update');
+        Route::get('{visit}/prescription', 'prescription')->can('printPrescription', 'visit')->name('prescription');
+    });
 
     Route::inertia('billing', 'billing/index')
         ->can(Permission::ViewBilling)

@@ -35,6 +35,8 @@ export type Appointment = {
         value: AppointmentStatus;
         label: string;
     }[];
+    /** Whether the current user (its doctor) can record the visit. */
+    can_start_visit: boolean;
     can_edit: boolean;
 };
 

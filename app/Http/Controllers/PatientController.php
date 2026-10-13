@@ -9,9 +9,11 @@ use App\Http\Requests\Patients\StorePatientRequest;
 use App\Http\Requests\Patients\UpdatePatientRequest;
 use App\Http\Resources\AppointmentResource;
 use App\Http\Resources\PatientSummaryResource;
+use App\Http\Resources\VisitResource;
 use App\Models\Appointment;
 use App\Models\Patient;
 use App\Models\User;
+use App\Models\Visit;
 use App\Support\ClinicSchedule;
 use Illuminate\Container\Attributes\CurrentUser;
 use Illuminate\Database\Eloquent\Builder;
@@ -118,9 +120,19 @@ class PatientController extends Controller
             ->each(fn (Appointment $appointment) => $appointment->setRelation('patient', $patient))
             ->map(fn (Appointment $appointment) => AppointmentResource::make($appointment)->resolve($request));
 
+        // Prescriptions are only loaded for staff who may see them.
+        $visits = $patient->visits()
+            ->visibleTo($user)
+            ->with('doctor:id,name,specialization')
+            ->when($user->hasPermission(Permission::ViewClinicalRecords), fn ($query) => $query->with('prescriptionItems'))
+            ->latest('visited_at')
+            ->get()
+            ->map(fn (Visit $visit) => VisitResource::make($visit)->resolve($request));
+
         return Inertia::render('patients/show', [
             'patient' => $patient,
             'appointments' => $appointments,
+            'visits' => $visits,
             'today' => $clinic->today()->toDateString(),
         ]);
     }

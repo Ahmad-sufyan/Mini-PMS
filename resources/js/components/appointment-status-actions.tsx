@@ -1,4 +1,5 @@
-import { Form } from '@inertiajs/react';
+import { Form, Link } from '@inertiajs/react';
+import { Stethoscope } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { toast } from 'sonner';
 import AppointmentStatusController from '@/actions/App/Http/Controllers/AppointmentStatusController';
@@ -13,6 +14,7 @@ import {
     DialogTrigger,
 } from '@/components/ui/dialog';
 import { formatDay } from '@/lib/dates';
+import { create as createVisit } from '@/routes/visits';
 import type { Appointment, AppointmentStatus } from '@/types';
 
 type NextStatus = Appointment['next_statuses'][number];
@@ -111,19 +113,37 @@ function ConfirmStatusDialog({
 
 /**
  * The status buttons (check in, complete, cancel, no-show) the current user
- * can use on the appointment.
+ * can use on the appointment. For its doctor, "Start visit" replaces
+ * Complete: saving the visit completes the appointment.
  */
 export default function AppointmentStatusActions({
     appointment,
 }: {
     appointment: Appointment;
 }) {
-    if (appointment.next_statuses.length === 0) {
+    if (
+        appointment.next_statuses.length === 0 &&
+        !appointment.can_start_visit
+    ) {
         return null;
     }
 
     return (
         <div className="flex flex-wrap items-center gap-2">
+            {appointment.can_start_visit && (
+                <Button size="sm" asChild>
+                    <Link
+                        href={createVisit({
+                            query: { appointment: appointment.id },
+                        })}
+                        data-test="start-visit-button"
+                    >
+                        <Stethoscope />
+                        Start visit
+                    </Link>
+                </Button>
+            )}
+
             {appointment.next_statuses.map((status) => {
                 const confirmation = confirmations[status.value];
 
