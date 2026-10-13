@@ -91,6 +91,15 @@ composer ci:check
 
 `composer ci:check` runs the same checks as CI: linting and formatting, TypeScript and PHPStan type checks, and the Pest test suite. `composer lint` fixes PHP code style.
 
+### Deploying
+
+The defaults in `.env.example` are for local development. On a public server:
+
+- Set `APP_ENV=production` and `APP_DEBUG=false`, so errors never show stack traces.
+- Serve the app over HTTPS and set `SESSION_SECURE_COOKIE=true`.
+- Leave `INERTIA_DEVTOOLS_ENABLED=false`. The Inertia devtools record each page's data, patient records included.
+- Only run the seeder for a public demo. It creates the demo logins above, all with the password `password`.
+
 ## Screenshots
 
 Screenshots go in `docs/screenshots/`.

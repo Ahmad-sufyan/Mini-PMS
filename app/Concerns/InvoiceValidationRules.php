@@ -85,7 +85,8 @@ trait InvoiceValidationRules
     }
 
     /**
-     * Check that the discount isn't more than the subtotal. This runs during
+     * Check that the subtotal fits the billing columns and the discount
+     * isn't more than the subtotal. This runs during
      * validation, so it reads the input: validated() would validate again.
      */
     protected function validateTotals(Validator $validator): void
@@ -95,6 +96,14 @@ trait InvoiceValidationRules
         }
 
         $subtotal = Invoice::subtotalOf($this->toItems($this->input('items')));
+
+        if ($subtotal > Invoice::MAX_AMOUNT) {
+            $validator->errors()->add('items', __('An invoice can\'t come to more than :max.', [
+                'max' => Money::format(Invoice::MAX_AMOUNT),
+            ]));
+
+            return;
+        }
 
         if ($this->toMinorOrZero($this->input('discount')) > $subtotal) {
             $validator->errors()->add('discount', __('The discount can\'t be more than the subtotal (:subtotal).', [

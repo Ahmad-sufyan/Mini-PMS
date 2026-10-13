@@ -72,6 +72,16 @@ test('the discount cannot be more than the subtotal', function () {
     expect(Invoice::sole()->total)->toBe(0);
 });
 
+test('an invoice cannot come to more than the billing columns can hold', function () {
+    $this->post(route('invoices.store'), invoicePayload([
+        'items' => [
+            ['service_id' => '', 'description' => 'Typo in the price', 'quantity' => 999, 'unit_price' => '99999999.99'],
+        ],
+    ]))->assertSessionHasErrors(['items' => 'An invoice can\'t come to more than USD 42,949,672.95.']);
+
+    expect(Invoice::count())->toBe(0);
+});
+
 test('invoice lines are validated', function (array $item, string $field) {
     $this->post(route('invoices.store'), invoicePayload([
         'items' => [['service_id' => '', 'description' => 'Consultation', 'quantity' => 1, 'unit_price' => '50.00', ...$item]],

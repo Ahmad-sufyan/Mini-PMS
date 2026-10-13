@@ -55,8 +55,9 @@ class AppointmentPolicy
             return true;
         }
 
-        // Doctors can check in and complete their own appointments.
+        // Doctors can check in their own patients. They complete the
+        // appointment by recording the visit, never without one.
         return $this->view($user, $appointment)
-            && in_array($status, [AppointmentStatus::CheckedIn, AppointmentStatus::Completed], true);
+            && $status === AppointmentStatus::CheckedIn;
     }
 }
